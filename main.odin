@@ -10,25 +10,44 @@ starting_pos: rl.Vector2 = {160, HEIGHT - 120}
 
 get_spritesheet_piece_pos :: proc(i: int) -> rl.Rectangle{
     rect := rl.Rectangle{0.0, 0.0, 200.0, 200.0}
-    switch i{
-        case 6:
+    piece := piece_int_to_enum(i)
+    switch piece{
+        case .WHITE_KING:
             rect.x = 0.0
             rect.y = 0.0
-        case 5:
+        case .WHITE_QUEEN:
             rect.x = 200.0
             rect.y = 0.0
-        case 4:
+        case .WHITE_BISHOP:
             rect.x = 400.0
             rect.y = 0.0
-        case 3:
+        case .WHITE_KNIGHT:
             rect.x = 600.0
             rect.y = 0.0
-        case 2:
+        case .WHITE_ROOK:
             rect.x = 800.0
             rect.y = 0.0
-        case 1:
+        case .WHITE_PAWN:
             rect.x = 1000.0
             rect.y = 0.0
+        case .BLACK_KING:
+            rect.x = 0.0
+            rect.y = 1000.0
+        case .BLACK_QUEEN:
+            rect.x = 200.0
+            rect.y = 1000.0
+        case .BLACK_BISHOP:
+            rect.x = 400.0
+            rect.y = 1000.0
+        case .BLACK_KNIGHT:
+            rect.x = 600.0
+            rect.y = 1000.0
+        case .BLACK_ROOK:
+            rect.x = 800.0
+            rect.y = 1000.0
+        case .BLACK_PAWN:
+            rect.x = 1000.0
+            rect.y = 1000.0
     }
     return rect
 }
@@ -93,6 +112,18 @@ show_piece_possible_moves :: proc(index: int, pieces: [64]int){
                     break
                 }
                 rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - i * 80 + 40), f32(radius), color) 
+            }
+        case .BLACK_PAWN:
+            /*
+            if (y + 1) * 8 + x > 63{
+                return
+            }
+            */
+            if pieces[(y - 1) * 8 + x] == 0{
+                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 + 120), f32(radius), color) 
+            }
+            if y == 6 && pieces[(y - 2) * 8 + x] == 0 && pieces[(y - 1) * 8 + x] == 0{
+                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 + 200), f32(radius), color) 
             }
     }
 }
@@ -159,6 +190,10 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
 
                 can_move = true
             }
+            case .BLACK_PAWN:
+                if sel_piece_index - 8 == index && pieces[index] == 0 || piece_y == 6 && sel_piece_index - 16 == index && pieces[index] == 0 && pieces[index + 8] == 0{
+                    can_move = true
+                } 
     }
     return can_move 
 }
@@ -255,6 +290,13 @@ main :: proc(){
 
     for i in 0..<8{
         pieces[8 + i] = 1
+    }
+
+    for i in 0..<8{
+        pieces[48 + i] = piece_enum_to_int(.BLACK_PAWN)
+    }
+    for i in 0..<8{
+        pieces[56 + i] = piece_enum_to_int(.BLACK_ROOK)
     }
 
     //-----------TEST------------
