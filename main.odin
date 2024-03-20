@@ -81,7 +81,7 @@ show_piece_possible_moves :: proc(index: int, pieces: [64]int){
     }
 
     radius := 12 
-    color := rl.Color{150, 150, 150, 150}
+    color := rl.Color{0, 0, 0, 40}
     //color := rl.Color{255, 0, 255, 255}
     piece := piece_int_to_enum(pieces[index])
     #partial switch piece{
@@ -313,28 +313,56 @@ main :: proc(){
     holding_piece := false
     index := 0
 
+    active_piece_index := -1
+    active_piece := -1
+
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         defer rl.EndDrawing()
 
         for j in 0..<8{
             for i in 0..<8{
-                color := rl.WHITE
+                color := rl.Color{255, 238, 214, 255}
                 if (i + j) % 2 == 1{
                     color = rl.Color{122, 84, 61, 255}
                 }
+
                 rl.DrawRectangle(i32(int(starting_pos.x) + i * 80), i32(int(starting_pos.y) - j * 80), 80, 80, color) 
             }
         }
 
 
         hovered_tile := get_clicked_tile()
-        if hovered_tile != -1 && pieces[hovered_tile] != 0{
-            //rl.SetMouseCursor(.POINTING_HAND)
+        if hovered_tile != -1 && pieces[hovered_tile] != 0 && active_piece_index == -1{
             rl.SetMouseCursor(.CROSSHAIR)
         }
         else{
             rl.SetMouseCursor(.DEFAULT)
+        }
+
+        if rl.IsMouseButtonDown(.LEFT) && hovered_tile != -1 && pieces[hovered_tile] != 0 && active_piece_index == -1{
+            active_piece_index = hovered_tile
+            active_piece = pieces[active_piece_index]
+            pieces[active_piece_index] = 0
+        }
+
+        if active_piece_index != -1{
+            rl.SetMouseCursor(.POINTING_HAND)
+            real_x := i32(int(starting_pos.x) + int(active_piece_index % 8) * 80)
+            real_y := i32(int(starting_pos.y) - int(active_piece_index / 8) * 80)
+            rl.DrawRectangle(real_x, real_y, 80, 80, rl.Color{218, 255, 204, 255}) 
+
+            show_piece_possible_moves(active_piece_index, pieces)
+            rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(pieces[active_piece_index]), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+
+            x := i32(int(starting_pos.x) + int(hovered_tile % 8) * 80)
+            y := i32(int(starting_pos.y) - int(hovered_tile / 8) * 80)
+            rl.DrawRectangleLinesEx(rl.Rectangle{f32(x), f32(y), 80.0, 80.0}, 4.0, rl.WHITE);  
+        }
+
+        if rl.IsMouseButtonReleased(.LEFT) && active_piece_index != -1{
+            pieces[active_piece_index] = active_piece
+            active_piece_index = -1
         }
 
         /*
@@ -413,8 +441,6 @@ main :: proc(){
                 }
             }
         }
-
-        //show_piece_possible_moves(cur_sel_index, pieces)
 
         rl.ClearBackground(rl.Color{56, 56, 56, 255})
     }
