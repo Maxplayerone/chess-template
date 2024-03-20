@@ -7,6 +7,8 @@ WIDTH :: 960
 HEIGHT :: 720
 
 starting_pos: rl.Vector2 = {160, HEIGHT - 120}
+PIECE_SIZE :: 80
+BOARD_LENGTH :: PIECE_SIZE * 8
 
 get_spritesheet_piece_pos :: proc(i: int) -> rl.Rectangle{
     rect := rl.Rectangle{0.0, 0.0, 200.0, 200.0}
@@ -53,16 +55,22 @@ get_spritesheet_piece_pos :: proc(i: int) -> rl.Rectangle{
 }
 
 get_clicked_tile :: proc() -> int{
-    //fmt.println(rl.GetMousePosition())
-    x_float := (f32(rl.GetMouseX()) - starting_pos.x) / 80
-    if x_float < 0.0{
-        x_float = -1
+    index := -1
+    x := int(rl.GetMouseX())
+    y := int(rl.GetMouseY())
+
+    x = x - int(starting_pos.x)
+    y = y - int(starting_pos.y) - 80 //for convenience so x and y are 0.0 at the bottom left
+    if x <= 0 || x >= BOARD_LENGTH || y >= 0 || y <= -BOARD_LENGTH{
+        return index
     }
-    y_float := (f32(rl.GetMouseY()) - starting_pos.y - 80.0) * -1 / 80.0
-    if y_float < 0.0{
-        y_float = -1
-    }
-    return int(x_float) + 8 * int(y_float)
+
+    x = x / 80
+    y = -y / 80
+
+    index = y * 8 + x
+
+    return index
 }
 
 show_piece_possible_moves :: proc(index: int, pieces: [64]int){
@@ -114,11 +122,6 @@ show_piece_possible_moves :: proc(index: int, pieces: [64]int){
                 rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - i * 80 + 40), f32(radius), color) 
             }
         case .BLACK_PAWN:
-            /*
-            if (y + 1) * 8 + x > 63{
-                return
-            }
-            */
             if pieces[(y - 1) * 8 + x] == 0{
                 rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 + 120), f32(radius), color) 
             }
@@ -149,6 +152,10 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
             if sel_piece_index + 8 == index && pieces[index] == 0 || piece_y == 1 && sel_piece_index + 16 == index && pieces[index] == 0 && pieces[index - 8] == 0{
                 can_move = true
             } 
+
+            if sel_piece_index + 7 == index && pieces[index] != 0 || sel_piece_index + 9 == index && pieces[index] != 0{
+                can_move = true
+            }
         case .WHITE_ROOK: 
             //at least one delta thing has to be zero
             //there cannot be any piece between the rook and the wanted tile
@@ -303,7 +310,9 @@ main :: proc(){
     //pieces[38] = piece_enum_to_int(.WHITE_ROOK)
     //pieces[53] = piece_enum_to_int(.WHITE_PAWN)
 
-    cur_sel_index := -1
+    holding_piece := false
+    index := 0
+
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         defer rl.EndDrawing()
@@ -318,23 +327,84 @@ main :: proc(){
             }
         }
 
-        if rl.IsMouseButtonPressed(.LEFT){
-            index := get_clicked_tile()
-            if index >= 0 && index < 64 && pieces[index] != 0{
-                cur_sel_index = index
+
+        hovered_tile := get_clicked_tile()
+        if hovered_tile != -1 && pieces[hovered_tile] != 0{
+            //rl.SetMouseCursor(.POINTING_HAND)
+            rl.SetMouseCursor(.CROSSHAIR)
+        }
+        else{
+            rl.SetMouseCursor(.DEFAULT)
+        }
+
+        /*
+        if rl.IsMouseButtonDown(.LEFT){
+
+        }
+        */
+
+        /*
+        if rl.IsMouseButtonDown(.LEFT){
+            mouse_pos := rl.GetMousePosition()
+            index := 0
+            if !holding_piece{
+                index = get_clicked_tile()
+                holding_piece = true
             }
-            else if cur_sel_index >= 0{
-                if check_if_move_is_legal(pieces, index, cur_sel_index){
-                    pieces[index] = pieces[cur_sel_index]
-                    pieces[cur_sel_index] = 0
-                    cur_sel_index = -1
+            rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(index), rl.Rectangle{mouse_pos.x, mouse_pos.y, 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+
+            if rl.IsMouseButtonReleased(.LEFT){
+                holding_piece = false
+
+                if cur_sel_index >= 0{
+                    if check_if_move_is_legal(pieces, index, cur_sel_index){
+                        pieces[index] = pieces[cur_sel_index]
+                        pieces[cur_sel_index] = 0
+                        cur_sel_index = -1
+                    }
+                    else{
+                        cur_sel_index = -1
+                    }
                 }
-                else{
-                    cur_sel_index = -1
+                else if index >= 0 && index < 64 && pieces[index] != 0{
+                    cur_sel_index = index
                 }
             }
         }
+        */
 
+        /*
+        if rl.IsMouseButtonDown(.LEFT){
+            mouse_pos := rl.GetMousePosition()
+            if !holding_piece{
+                index = get_clicked_tile()
+                holding_piece = true
+            }
+            rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(pieces[index]), rl.Rectangle{mouse_pos.x, mouse_pos.y, 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+        }
+        if rl.IsMouseButtonReleased(.LEFT){
+            holding_piece = false
+            mouse_pos := rl.GetMousePosition()
+            //get wanted index as the index the cursor is currently above and then check if it's move is legal
+            if check_if_move_is_legal(pieces, index){
+                pieces[index] = pieces[]
+            }
+
+                if cur_sel_index >= 0{
+                    if check_if_move_is_legal(pieces, index, cur_sel_index){
+                        pieces[index] = pieces[cur_sel_index]
+                        pieces[cur_sel_index] = 0
+                        cur_sel_index = -1
+                    }
+                    else{
+                        cur_sel_index = -1
+                    }
+                }
+                else if index >= 0 && index < 64 && pieces[index] != 0{
+                    cur_sel_index = index
+                }
+        }
+        */
         for i in 0..<8{
             for j in 0..<8{
                 piece_index := pieces[i * 8 + j]
@@ -344,7 +414,7 @@ main :: proc(){
             }
         }
 
-        show_piece_possible_moves(cur_sel_index, pieces)
+        //show_piece_possible_moves(cur_sel_index, pieces)
 
         rl.ClearBackground(rl.Color{56, 56, 56, 255})
     }
