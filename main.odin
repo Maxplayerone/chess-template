@@ -73,138 +73,6 @@ get_clicked_tile :: proc() -> int{
     return index
 }
 
-show_piece_possible_moves :: proc(index: int, pieces: [64]int){
-    x := int(index % 8)
-    y := int(index / 8)
-    if x < 0 || y < 0{
-        return 
-    }
-
-    radius := 12 
-    color := rl.Color{0, 0, 0, 40}
-    //color := rl.Color{255, 0, 255, 255}
-    piece := piece_int_to_enum(pieces[index])
-    #partial switch piece{
-        case .WHITE_PAWN:
-            if (y + 1) * 8 + x > 63{
-                return
-            }
-            if pieces[(y + 1) * 8 + x] == 0{
-                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 - 40), f32(radius), color) 
-            }
-            if y == 1 && pieces[(y + 2) * 8 + x] == 0 && pieces[(y + 1) * 8 + x] == 0{
-                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 - 120), f32(radius), color) 
-            }
-        case .WHITE_ROOK: 
-            for i in (x + 1)..<8{
-                if pieces[y * 8 + i] != 0{
-                    break
-                }
-                rl.DrawCircle(i32(int(starting_pos.x) + i * 80 + 40), i32(int(starting_pos.y) - y * 80 + 40), f32(radius), color) 
-            }
-            for i := (x -1); i >= 0; i -= 1{
-                if pieces[y * 8 + i] != 0{
-                    break
-                }
-                rl.DrawCircle(i32(int(starting_pos.x) + i * 80 + 40), i32(int(starting_pos.y) - y * 80 + 40), f32(radius), color) 
-            }
-
-            for i in (y + 1)..<8{
-                if pieces[i * 8 + x] != 0{
-                    break
-                }
-                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - i * 80 + 40), f32(radius), color) 
-            }
-            for i := (y -1); i >= 0; i -= 1{
-                if pieces[i * 8 + x] != 0{
-                    break
-                }
-                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - i * 80 + 40), f32(radius), color) 
-            }
-        case .BLACK_PAWN:
-            if pieces[(y - 1) * 8 + x] == 0{
-                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 + 120), f32(radius), color) 
-            }
-            if y == 6 && pieces[(y - 2) * 8 + x] == 0 && pieces[(y - 1) * 8 + x] == 0{
-                rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 + 200), f32(radius), color) 
-            }
-    }
-}
-
-check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int) -> bool{
-    piece := piece_int_to_enum(pieces[sel_piece_index])
-    can_move := false
-
-    //the position in which the piece wants to move
-    x := int(index % 8)
-    y := int(index / 8)
-
-    //the position the piece now occupies
-    piece_x := int(sel_piece_index % 8)
-    piece_y := int(sel_piece_index / 8)
-
-    if index > 63{
-        return can_move
-    }
-
-    #partial switch piece{
-        case .WHITE_PAWN:
-            if sel_piece_index + 8 == index && pieces[index] == 0 || piece_y == 1 && sel_piece_index + 16 == index && pieces[index] == 0 && pieces[index - 8] == 0{
-                can_move = true
-            } 
-
-            if sel_piece_index + 7 == index && pieces[index] != 0 || sel_piece_index + 9 == index && pieces[index] != 0{
-                can_move = true
-            }
-        case .WHITE_ROOK: 
-            //at least one delta thing has to be zero
-            //there cannot be any piece between the rook and the wanted tile
-            delta_x := abs(x - piece_x)
-            delta_y := abs(y - piece_y)
-            if delta_x != 0 && delta_y == 0 || delta_x == 0 && delta_y != 0{
-                if delta_x != 0{
-                    if x > piece_x{
-                        for i in (piece_x + 1)..<x{
-                            if pieces[piece_y * 8 + i] != 0{
-                                return can_move
-                            }
-                        }
-                    }
-                    else{
-                        for i := piece_x - 1; i > x; i -= 1{
-                            if pieces[piece_y * 8 + i] != 0{
-                                return can_move
-                            }
-                        }
-                    }
-                }
-                else{
-                    if y > piece_y{
-                        for i in (piece_y + 1)..<y{
-                            if pieces[i * 8 + piece_x] != 0{
-                                return can_move
-                            }
-                        }
-                    }
-                    else{
-                        for i := piece_y - 1; i > y; i -= 1{
-                            if pieces[i * 8 + piece_x] != 0{
-                                return can_move
-                            }
-                        }
-                    }
-                }
-
-                can_move = true
-            }
-            case .BLACK_PAWN:
-                if sel_piece_index - 8 == index && pieces[index] == 0 || piece_y == 6 && sel_piece_index - 16 == index && pieces[index] == 0 && pieces[index + 8] == 0{
-                    can_move = true
-                } 
-    }
-    return can_move 
-}
-
 //0 - nothing 
 //1 - white pawn
 //2 - white rook
@@ -310,9 +178,6 @@ main :: proc(){
     //pieces[38] = piece_enum_to_int(.WHITE_ROOK)
     //pieces[53] = piece_enum_to_int(.WHITE_PAWN)
 
-    holding_piece := false
-    index := 0
-
     active_piece_index := -1
     active_piece := -1
 
@@ -333,7 +198,16 @@ main :: proc(){
             }
         }
 
+        for i in 0..<8{
+            for j in 0..<8{
+                piece_index := pieces[i * 8 + j]
+                if piece_index > 0{
+                    rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(piece_index), rl.Rectangle{f32(int(starting_pos.x) + j * 80), f32(int(starting_pos.y) - i * 80), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+                }
+            }
+        }
 
+        //changing cursor
         hovered_tile := get_clicked_tile()
         if hovered_tile != -1 && pieces[hovered_tile] != 0 && active_piece_index == -1{
             rl.SetMouseCursor(.CROSSHAIR)
@@ -342,24 +216,28 @@ main :: proc(){
             rl.SetMouseCursor(.DEFAULT)
         }
 
-        if rl.IsMouseButtonDown(.LEFT) && hovered_tile != -1 && pieces[hovered_tile] != 0 && active_piece_index == -1{
-            active_piece_index = hovered_tile
-            active_piece = pieces[active_piece_index]
-            pieces[active_piece_index] = 0
+        //when holding left click
+        if rl.IsMouseButtonDown(.LEFT) && hovered_tile != -1 && pieces[hovered_tile] != 0{
+            if active_piece_index == -1 || active_waiting_state == true && hovered_tile != active_piece_index{
+                active_piece_index = hovered_tile
+                active_piece = pieces[active_piece_index]
+                pieces[active_piece_index] = 0
 
-            active_waiting_state = false
+                active_waiting_state = false
+            }
         }
 
+        //while the left click is down (or the piece is in it's waiting tile)
         if active_piece_index != -1{
             //gradient
             real_x := i32(int(starting_pos.x) + int(active_piece_index % 8) * 80)
             real_y := i32(int(starting_pos.y) - int(active_piece_index / 8) * 80)
             rl.DrawRectangle(real_x, real_y, 80, 80, rl.Color{97, 158, 36, 255}) 
 
-            show_piece_possible_moves(active_piece_index, pieces)
+            show_piece_possible_moves(active_piece_index, piece_int_to_enum(active_piece), pieces)
 
             if !active_waiting_state{
-                rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(pieces[active_piece_index]), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+                rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
 
                 //outline
                 x := i32(int(starting_pos.x) + int(hovered_tile % 8) * 80)
@@ -368,10 +246,14 @@ main :: proc(){
 
                 rl.SetMouseCursor(.POINTING_HAND)
             }
+            else{
+                rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(real_x), f32(real_y), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+            }
         }
 
+        //after clicking left click
         if rl.IsMouseButtonReleased(.LEFT) && active_piece_index != -1{
-            if check_if_move_is_legal(pieces, hovered_tile, active_piece_index){
+            if check_if_move_is_legal(pieces, hovered_tile, active_piece_index, piece_int_to_enum(active_piece)){
                 pieces[hovered_tile] = active_piece
                 pieces[active_piece_index] = 0
                 active_piece_index = -1
@@ -386,83 +268,6 @@ main :: proc(){
                 active_piece_index = -1
             }
 
-        }
-
-        /*
-        if rl.IsMouseButtonDown(.LEFT){
-
-        }
-        */
-
-        /*
-        if rl.IsMouseButtonDown(.LEFT){
-            mouse_pos := rl.GetMousePosition()
-            index := 0
-            if !holding_piece{
-                index = get_clicked_tile()
-                holding_piece = true
-            }
-            rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(index), rl.Rectangle{mouse_pos.x, mouse_pos.y, 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
-
-            if rl.IsMouseButtonReleased(.LEFT){
-                holding_piece = false
-
-                if cur_sel_index >= 0{
-                    if check_if_move_is_legal(pieces, index, cur_sel_index){
-                        pieces[index] = pieces[cur_sel_index]
-                        pieces[cur_sel_index] = 0
-                        cur_sel_index = -1
-                    }
-                    else{
-                        cur_sel_index = -1
-                    }
-                }
-                else if index >= 0 && index < 64 && pieces[index] != 0{
-                    cur_sel_index = index
-                }
-            }
-        }
-        */
-
-        /*
-        if rl.IsMouseButtonDown(.LEFT){
-            mouse_pos := rl.GetMousePosition()
-            if !holding_piece{
-                index = get_clicked_tile()
-                holding_piece = true
-            }
-            rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(pieces[index]), rl.Rectangle{mouse_pos.x, mouse_pos.y, 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
-        }
-        if rl.IsMouseButtonReleased(.LEFT){
-            holding_piece = false
-            mouse_pos := rl.GetMousePosition()
-            //get wanted index as the index the cursor is currently above and then check if it's move is legal
-            if check_if_move_is_legal(pieces, index){
-                pieces[index] = pieces[]
-            }
-
-                if cur_sel_index >= 0{
-                    if check_if_move_is_legal(pieces, index, cur_sel_index){
-                        pieces[index] = pieces[cur_sel_index]
-                        pieces[cur_sel_index] = 0
-                        cur_sel_index = -1
-                    }
-                    else{
-                        cur_sel_index = -1
-                    }
-                }
-                else if index >= 0 && index < 64 && pieces[index] != 0{
-                    cur_sel_index = index
-                }
-        }
-        */
-        for i in 0..<8{
-            for j in 0..<8{
-                piece_index := pieces[i * 8 + j]
-                if piece_index > 0{
-                    rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(piece_index), rl.Rectangle{f32(int(starting_pos.x) + j * 80), f32(int(starting_pos.y) - i * 80), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
-                }
-            }
         }
 
         rl.ClearBackground(rl.Color{56, 56, 56, 255})
