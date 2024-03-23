@@ -316,6 +316,8 @@ main :: proc(){
     active_piece_index := -1
     active_piece := -1
 
+    active_waiting_state := false
+
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         defer rl.EndDrawing()
@@ -344,25 +346,46 @@ main :: proc(){
             active_piece_index = hovered_tile
             active_piece = pieces[active_piece_index]
             pieces[active_piece_index] = 0
+
+            active_waiting_state = false
         }
 
         if active_piece_index != -1{
-            rl.SetMouseCursor(.POINTING_HAND)
+            //gradient
             real_x := i32(int(starting_pos.x) + int(active_piece_index % 8) * 80)
             real_y := i32(int(starting_pos.y) - int(active_piece_index / 8) * 80)
-            rl.DrawRectangle(real_x, real_y, 80, 80, rl.Color{218, 255, 204, 255}) 
+            rl.DrawRectangle(real_x, real_y, 80, 80, rl.Color{97, 158, 36, 255}) 
 
             show_piece_possible_moves(active_piece_index, pieces)
-            rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(pieces[active_piece_index]), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
 
-            x := i32(int(starting_pos.x) + int(hovered_tile % 8) * 80)
-            y := i32(int(starting_pos.y) - int(hovered_tile / 8) * 80)
-            rl.DrawRectangleLinesEx(rl.Rectangle{f32(x), f32(y), 80.0, 80.0}, 4.0, rl.WHITE);  
+            if !active_waiting_state{
+                rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(pieces[active_piece_index]), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+
+                //outline
+                x := i32(int(starting_pos.x) + int(hovered_tile % 8) * 80)
+                y := i32(int(starting_pos.y) - int(hovered_tile / 8) * 80)
+                rl.DrawRectangleLinesEx(rl.Rectangle{f32(x), f32(y), 80.0, 80.0}, 4.0, rl.WHITE);  
+
+                rl.SetMouseCursor(.POINTING_HAND)
+            }
         }
 
         if rl.IsMouseButtonReleased(.LEFT) && active_piece_index != -1{
-            pieces[active_piece_index] = active_piece
-            active_piece_index = -1
+            if check_if_move_is_legal(pieces, hovered_tile, active_piece_index){
+                pieces[hovered_tile] = active_piece
+                pieces[active_piece_index] = 0
+                active_piece_index = -1
+            }
+            else if hovered_tile == active_piece_index && active_waiting_state == false{
+                active_waiting_state = true 
+
+                pieces[active_piece_index] = active_piece
+            }
+            else{
+                pieces[active_piece_index] = active_piece
+                active_piece_index = -1
+            }
+
         }
 
         /*
