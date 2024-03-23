@@ -65,6 +65,14 @@ show_piece_possible_moves :: proc(index: int, piece: Pieces, pieces: [64]int){
             if y == 6 && pieces[(y - 2) * 8 + x] == 0 && pieces[(y - 1) * 8 + x] == 0{
                 rl.DrawCircle(i32(int(starting_pos.x) + x * 80 + 40), i32(int(starting_pos.y) - y * 80 + 200), f32(radius), color) 
             }
+
+            //for taking pieces
+            if pieces[(y - 1) * 8 + x + 1] < 7 && pieces[(y - 1) * 8 + x + 1] > 0{
+                rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + x * 80 + 120), f32(int(starting_pos.y) - y * 80 + 120)}, 30, 38, 360.0, 0.0, 1, color) 
+            }
+            if pieces[(y - 1) * 8 + x - 1] < 7 && pieces[(y - 1) * 8 + x - 1] > 0{
+                rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + x * 80 - 40), f32(int(starting_pos.y) - y * 80 + 120)}, 30, 38, 360.0, 0.0, 1, color) 
+            }
     }
 }
 
@@ -139,6 +147,11 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
                 if sel_piece_index - 8 == index && pieces[index] == 0 || piece_y == 6 && sel_piece_index - 16 == index && pieces[index] == 0 && pieces[index + 8] == 0{
                     can_move = true
                 } 
+
+                //for taking pieces
+                if sel_piece_index - 7 == index && pieces[index] < 7 && pieces[index] > 0 || sel_piece_index - 9 == index && pieces[index] < 7 && pieces[index] > 0{
+                    can_move = true
+                }
     }
     return can_move 
 }
