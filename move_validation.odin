@@ -26,10 +26,10 @@ show_piece_possible_moves :: proc(index: int, piece: Pieces, pieces: [64]int){
             }
 
             //taking moves
-            if pieces[(y + 1) * 8 + x + 1] != 0{
+            if pieces[(y + 1) * 8 + x + 1] > 6{
                 rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + x * 80 + 120), f32(int(starting_pos.y) - y * 80 - 40)}, 30, 38, 360.0, 0.0, 1, color) 
             }
-            if pieces[(y + 1) * 8 + x - 1] != 0{
+            if pieces[(y + 1) * 8 + x - 1] > 6{
                 rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + x * 80 - 40), f32(int(starting_pos.y) - y * 80 - 40)}, 30, 38, 360.0, 0.0, 1, color) 
             }
         case .WHITE_ROOK: 
@@ -90,7 +90,8 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
                 can_move = true
             } 
 
-            if sel_piece_index + 7 == index && pieces[index] != 0 || sel_piece_index + 9 == index && pieces[index] != 0{
+            //for taking pieces
+            if sel_piece_index + 7 == index && pieces[index] > 6 || sel_piece_index + 9 == index && pieces[index] > 6{
                 can_move = true
             }
         case .WHITE_ROOK: 
