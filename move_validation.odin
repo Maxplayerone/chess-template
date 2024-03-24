@@ -74,6 +74,7 @@ get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]
     moves: [dynamic]int
     #partial switch piece{
         case .WHITE_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
+        case .BLACK_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
     }
     return moves
 }

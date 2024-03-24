@@ -120,6 +120,7 @@ main :: proc(){
     pieces[1] = piece_enum_to_int(.BLACK_PAWN)
     pieces[43] = piece_enum_to_int(.WHITE_PAWN)
     pieces[45] = piece_enum_to_int(.BLACK_PAWN)
+    pieces[63] = piece_enum_to_int(.BLACK_ROOK)
 
     //-----------TEST------------
     //pieces[38] = piece_enum_to_int(.WHITE_ROOK)
@@ -129,7 +130,7 @@ main :: proc(){
     active_piece := -1
     active_waiting_state := false
 
-    white_move := true
+    white_move := true 
 
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
