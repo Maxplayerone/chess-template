@@ -24,6 +24,10 @@ get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]
         case .BLACK_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
         case .WHITE_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
         case .BLACK_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
+        case.WHITE_QUEEN: moves = get_moves_bishop(piece_index, piece, pieces)
+                        for move in get_moves_rook(piece_index, piece, pieces){
+                            append(&moves, move)
+                        }
     }
     return moves
 }
@@ -40,8 +44,8 @@ get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [d
     possible_moves: [dynamic]int
 
     //top-right
-    x_copy := piece_pos.x
-    y_copy := piece_pos.y
+    x_copy := piece_pos.x + 1 
+    y_copy := piece_pos.y + 1
     for x_copy < 8 && y_copy < 8{
         if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
             break
@@ -51,12 +55,13 @@ get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [d
             break
         }
         append(&possible_moves, int(y_copy * 8 + x_copy))
+
         x_copy += 1
         y_copy += 1
     }
     //top-left
-    x_copy = piece_pos.x
-    y_copy = piece_pos.y
+    x_copy = piece_pos.x - 1
+    y_copy = piece_pos.y + 1
     for x_copy >= 0 && y_copy < 8{
         if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
             break
@@ -66,12 +71,13 @@ get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [d
             break
         }
         append(&possible_moves, int(y_copy * 8 + x_copy))
+
         x_copy -= 1
         y_copy += 1
     }
     //bottom-right
-    x_copy = piece_pos.x
-    y_copy = piece_pos.y
+    x_copy = piece_pos.x + 1
+    y_copy = piece_pos.y - 1
     for x_copy < 8 && y_copy >= 0{
         if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
             break
@@ -81,12 +87,13 @@ get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [d
             break
         }
         append(&possible_moves, int(y_copy * 8 + x_copy))
+
         x_copy += 1
         y_copy -= 1
     }
     //bottom-left
-    x_copy = piece_pos.x
-    y_copy = piece_pos.y
+    x_copy = piece_pos.x - 1
+    y_copy = piece_pos.y - 1
     for x_copy >= 0 && y_copy >= 0{
         if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
             break
@@ -96,6 +103,7 @@ get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [d
             break
         }
         append(&possible_moves, int(y_copy * 8 + x_copy))
+
         x_copy -= 1
         y_copy -= 1
     }

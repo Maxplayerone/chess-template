@@ -115,7 +115,7 @@ main :: proc(){
     }
     */
 
-    pieces[24] = piece_enum_to_int(.WHITE_BISHOP)
+    pieces[24] = piece_enum_to_int(.WHITE_QUEEN)
     pieces[6] = piece_enum_to_int(.WHITE_PAWN)
     pieces[1] = piece_enum_to_int(.BLACK_PAWN)
     pieces[44] = piece_enum_to_int(.WHITE_PAWN)
