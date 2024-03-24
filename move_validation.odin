@@ -32,6 +32,20 @@ get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]
     return moves
 }
 
+show_possible_moves :: proc(moves: [dynamic]int, piece: Pieces, pieces: [64]int){
+    color := rl.Color{0, 0, 0, 70}
+    for move in moves{
+        move_pos := get_coords_from_index(move)
+
+        if is_different_colour(pieces[move], piece_enum_to_int(piece)){
+            rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + move_pos.x * 80.0 + 40), f32(int(starting_pos.y) - move_pos.y * 80 + 40)}, 30, 38, 360.0, 0.0, 1, color) 
+        }
+        else{
+            rl.DrawCircle(i32(int(starting_pos.x) + move_pos.x * 80 + 40), i32(int(starting_pos.y) - move_pos.y * 80 + 40), 12.0, color)
+        }
+    }
+}
+
 check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int, sel_piece: Pieces) -> bool{
     if index == sel_piece_index{
         return false

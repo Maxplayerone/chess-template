@@ -115,7 +115,7 @@ main :: proc(){
     }
     */
 
-    pieces[24] = piece_enum_to_int(.WHITE_QUEEN)
+    pieces[24] = piece_enum_to_int(.WHITE_BISHOP)
     pieces[6] = piece_enum_to_int(.WHITE_PAWN)
     pieces[1] = piece_enum_to_int(.BLACK_PAWN)
     pieces[44] = piece_enum_to_int(.WHITE_PAWN)
@@ -180,16 +180,19 @@ main :: proc(){
 
         //while the left click is down (or the piece is in it's waiting tile)
         if active_piece_index != -1{
-                    for move in get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces){
+            moves := get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces) 
+            /*
+                    for move in moves{
                         draw_quad_at_index(move, rl.RED)
                     }
+                    */
 
             //gradient
             real_x := i32(int(starting_pos.x) + int(active_piece_index % 8) * 80)
             real_y := i32(int(starting_pos.y) - int(active_piece_index / 8) * 80)
             rl.DrawRectangle(real_x, real_y, 80, 80, rl.Color{97, 158, 36, 255}) 
 
-            //show_piece_possible_moves(active_piece_index, piece_int_to_enum(active_piece), pieces)
+            show_possible_moves(moves, piece_int_to_enum(active_piece), pieces)
 
             if !active_waiting_state{
                 rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
