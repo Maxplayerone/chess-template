@@ -6,10 +6,6 @@ import "core:fmt"
 WIDTH :: 960
 HEIGHT :: 720
 
-starting_pos: rl.Vector2 = {160, HEIGHT - 120}
-PIECE_SIZE :: 80
-BOARD_LENGTH :: PIECE_SIZE * 8
-
 get_spritesheet_piece_pos :: proc(i: int) -> rl.Rectangle{
     rect := rl.Rectangle{0.0, 0.0, 200.0, 200.0}
     piece := piece_int_to_enum(i)
@@ -73,58 +69,6 @@ get_clicked_tile :: proc() -> int{
     return index
 }
 
-//0 - nothing 
-//1 - white pawn
-//2 - white rook
-//3 - white knight
-//4 - white bishop
-//5 - white queen
-//6 - white king
-//7 - black pawn
-//8 - black rook 
-//9 - black knight
-//10 - black bishop
-//11 - black queen
-//12 - black king
-
-piece_int_to_enum :: proc(num: int) -> Pieces{
-    piece: Pieces
-    switch num{
-        case 1: piece = .WHITE_PAWN
-        case 2: piece = .WHITE_ROOK
-        case 3: piece = .WHITE_KNIGHT
-        case 4: piece = .WHITE_BISHOP
-        case 5: piece = .WHITE_QUEEN
-        case 6: piece = .WHITE_KING
-        case 7: piece = .BLACK_PAWN
-        case 8: piece = .BLACK_ROOK
-        case 9: piece = .BLACK_KNIGHT
-        case 10: piece = .BLACK_BISHOP
-        case 11: piece = .BLACK_QUEEN
-        case 12: piece = .BLACK_KING
-    }
-    return piece
-}
-
-piece_enum_to_int :: proc(piece_enum: Pieces) -> int{
-    piece: int
-    switch piece_enum{
-        case .WHITE_PAWN: piece = 1
-        case .WHITE_ROOK: piece = 2
-        case .WHITE_KNIGHT: piece = 3
-        case .WHITE_BISHOP: piece = 4
-        case .WHITE_QUEEN: piece = 5
-        case .WHITE_KING: piece = 6
-        case .BLACK_PAWN: piece = 7
-        case .BLACK_ROOK: piece = 8
-        case .BLACK_KNIGHT: piece = 9
-        case .BLACK_BISHOP: piece = 10
-        case .BLACK_QUEEN: piece = 11
-        case .BLACK_KING: piece = 12
-    }
-    return piece 
-}
-
 is_this_that_color_turn :: proc(white_move: bool, pieces: [64]int, hovered_tile: int) -> bool{
     if white_move && pieces[hovered_tile] > 0 && pieces[hovered_tile] < 7{
         return true
@@ -133,21 +77,6 @@ is_this_that_color_turn :: proc(white_move: bool, pieces: [64]int, hovered_tile:
         return true
     }
     return false
-}
-
-Pieces :: enum{
-    WHITE_PAWN,
-    WHITE_ROOK,
-    WHITE_KNIGHT,
-    WHITE_BISHOP,
-    WHITE_QUEEN,
-    WHITE_KING,
-    BLACK_PAWN,
-    BLACK_ROOK,
-    BLACK_KNIGHT,
-    BLACK_BISHOP,
-    BLACK_QUEEN,
-    BLACK_KING,
 }
 
 main :: proc(){
@@ -169,6 +98,7 @@ main :: proc(){
     pieces[6] = 3
     pieces[7] = 2
     */
+    /*
     for i in 0..<8{
         pieces[i] = piece_enum_to_int(.WHITE_ROOK)
     }
@@ -183,6 +113,13 @@ main :: proc(){
     for i in 0..<8{
         pieces[56 + i] = piece_enum_to_int(.BLACK_ROOK)
     }
+    */
+
+    pieces[24] = piece_enum_to_int(.WHITE_ROOK)
+    pieces[6] = piece_enum_to_int(.WHITE_PAWN)
+    pieces[1] = piece_enum_to_int(.BLACK_PAWN)
+    pieces[43] = piece_enum_to_int(.WHITE_PAWN)
+    pieces[45] = piece_enum_to_int(.BLACK_PAWN)
 
     //-----------TEST------------
     //pieces[38] = piece_enum_to_int(.WHITE_ROOK)
@@ -242,6 +179,10 @@ main :: proc(){
 
         //while the left click is down (or the piece is in it's waiting tile)
         if active_piece_index != -1{
+                    for move in get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces){
+                        draw_quad_at_index(move, rl.RED)
+                    }
+
             //gradient
             real_x := i32(int(starting_pos.x) + int(active_piece_index % 8) * 80)
             real_y := i32(int(starting_pos.y) - int(active_piece_index / 8) * 80)
@@ -266,12 +207,20 @@ main :: proc(){
 
         //after clicking left click
         if rl.IsMouseButtonReleased(.LEFT) && active_piece_index != -1{
+
+            pieces[hovered_tile] = active_piece
+            pieces[active_piece_index] = 0
+            active_piece_index = -1
+
+            //white_move = !white_move
+            /*
             if check_if_move_is_legal(pieces, hovered_tile, active_piece_index, piece_int_to_enum(active_piece)){
                 pieces[hovered_tile] = active_piece
                 pieces[active_piece_index] = 0
                 active_piece_index = -1
 
                 white_move = !white_move
+
             }
             else if hovered_tile == active_piece_index && active_waiting_state == false{
                 active_waiting_state = true 
@@ -282,6 +231,7 @@ main :: proc(){
                 pieces[active_piece_index] = active_piece
                 active_piece_index = -1
             }
+            */
 
         }
 

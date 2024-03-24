@@ -3,6 +3,81 @@ package main
 import rl "vendor:raylib"
 import "core:fmt"
 
+
+is_same_colour :: proc(piece_to_check: int, validate_piece: int) -> bool{
+    if validate_piece > 0 && validate_piece < 7 && piece_to_check > 0 && piece_to_check < 7 ||
+        validate_piece > 6 && piece_to_check > 6{
+            return true
+        }
+    return false
+}
+
+is_different_colour :: proc(piece_to_check: int, validate_piece: int) -> bool{
+    return !is_same_colour(piece_to_check, validate_piece) && piece_to_check != 0
+}
+
+get_moves_rook :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    piece_pos := get_coords_from_index(piece_index)
+    possible_moves: [dynamic]int
+
+    //vertical to right
+    for i in (piece_pos.x + 1)..<8{
+        if is_same_colour(pieces[piece_pos.y * 8 + i], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[piece_pos.y * 8 + i], piece_enum_to_int(piece)){
+            append(&possible_moves, int(piece_pos.y * 8 + i))
+            break
+        }
+        append(&possible_moves, int(piece_pos.y * 8 + i))
+    }
+
+    //vertial from piece to left
+    for i := piece_pos.x - 1; i >= 0; i -= 1{
+        if is_same_colour(pieces[piece_pos.y * 8 + i], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[piece_pos.y * 8 + i], piece_enum_to_int(piece)){
+            append(&possible_moves, int(piece_pos.y * 8 + i))
+            break
+        }
+        append(&possible_moves, int(piece_pos.y * 8 + i))
+    }
+
+    //horizontal to up 
+    for i in (piece_pos.y + 1)..<8{
+        if is_same_colour(pieces[i * 8 + piece_pos.x], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[i * 8 + piece_pos.x], piece_enum_to_int(piece)){
+            append(&possible_moves, int(i * 8 + piece_pos.x))
+            break
+        }
+        append(&possible_moves, int(i * 8 + piece_pos.x))
+    }
+    //horizontal piece to down 
+    for i := piece_pos.y - 1; i >= 0; i -= 1{
+        if is_same_colour(pieces[i * 8 + piece_pos.x], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[i * 8 + piece_pos.x], piece_enum_to_int(piece)){
+            append(&possible_moves, int(i * 8 + piece_pos.x))
+            break
+        }
+        append(&possible_moves, int(i * 8 + piece_pos.x))
+    }
+
+    return possible_moves 
+}
+
+get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    moves: [dynamic]int
+    #partial switch piece{
+        case .WHITE_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
+    }
+    return moves
+}
+
 show_piece_possible_moves :: proc(index: int, piece: Pieces, pieces: [64]int){
     x := int(index % 8)
     y := int(index / 8)
@@ -34,6 +109,10 @@ show_piece_possible_moves :: proc(index: int, piece: Pieces, pieces: [64]int){
             }
         case .WHITE_ROOK: 
             for i in (x + 1)..<8{
+                if pieces[y * 8 + i] > 6{
+                    rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + x * 80 + 120), f32(int(starting_pos.y) - y * 80 + 40)}, 30, 38, 360.0, 0.0, 1, color) 
+                    break
+                }
                 if pieces[y * 8 + i] != 0{
                     break
                 }
@@ -108,10 +187,12 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
             delta_x := abs(x - piece_x)
             delta_y := abs(y - piece_y)
             if delta_x != 0 && delta_y == 0 || delta_x == 0 && delta_y != 0{
+
                 if delta_x != 0{
                     if x > piece_x{
-                        for i in (piece_x + 1)..<x{
-                            if pieces[piece_y * 8 + i] != 0{
+                        for i in (piece_x + 1)..=x{
+                            //a break-like statement
+                            if pieces[piece_y * 8 + i] > 0 && pieces[piece_y * 8 + i] < 7{
                                 return can_move
                             }
                         }
@@ -126,8 +207,8 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
                 }
                 else{
                     if y > piece_y{
-                        for i in (piece_y + 1)..<y{
-                            if pieces[i * 8 + piece_x] != 0{
+                        for i in (piece_y + 1)..=y{
+                            if pieces[i * 8 + piece_x] > 0 && pieces[i * 8 + piece_x] < 7{
                                 return can_move
                             }
                         }
