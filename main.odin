@@ -115,11 +115,11 @@ main :: proc(){
     }
     */
 
-    pieces[24] = piece_enum_to_int(.WHITE_ROOK)
+    pieces[24] = piece_enum_to_int(.WHITE_BISHOP)
     pieces[6] = piece_enum_to_int(.WHITE_PAWN)
     pieces[1] = piece_enum_to_int(.BLACK_PAWN)
-    pieces[43] = piece_enum_to_int(.WHITE_PAWN)
-    pieces[45] = piece_enum_to_int(.BLACK_PAWN)
+    pieces[44] = piece_enum_to_int(.WHITE_PAWN)
+    pieces[46] = piece_enum_to_int(.BLACK_PAWN)
     pieces[63] = piece_enum_to_int(.BLACK_ROOK)
 
     //-----------TEST------------

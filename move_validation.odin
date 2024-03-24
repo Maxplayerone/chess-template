@@ -16,6 +16,93 @@ is_different_colour :: proc(piece_to_check: int, validate_piece: int) -> bool{
     return !is_same_colour(piece_to_check, validate_piece) && piece_to_check != 0
 }
 
+
+get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    moves: [dynamic]int
+    #partial switch piece{
+        case .WHITE_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
+        case .BLACK_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
+        case .WHITE_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
+        case .BLACK_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
+    }
+    return moves
+}
+
+check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int, sel_piece: Pieces) -> bool{
+    if index == sel_piece_index{
+        return false
+    }
+    return true
+}
+
+get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    piece_pos := get_coords_from_index(piece_index)
+    possible_moves: [dynamic]int
+
+    //top-right
+    x_copy := piece_pos.x
+    y_copy := piece_pos.y
+    for x_copy < 8 && y_copy < 8{
+        if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            append(&possible_moves, int(y_copy * 8 + x_copy))
+            break
+        }
+        append(&possible_moves, int(y_copy * 8 + x_copy))
+        x_copy += 1
+        y_copy += 1
+    }
+    //top-left
+    x_copy = piece_pos.x
+    y_copy = piece_pos.y
+    for x_copy >= 0 && y_copy < 8{
+        if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            append(&possible_moves, int(y_copy * 8 + x_copy))
+            break
+        }
+        append(&possible_moves, int(y_copy * 8 + x_copy))
+        x_copy -= 1
+        y_copy += 1
+    }
+    //bottom-right
+    x_copy = piece_pos.x
+    y_copy = piece_pos.y
+    for x_copy < 8 && y_copy >= 0{
+        if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            append(&possible_moves, int(y_copy * 8 + x_copy))
+            break
+        }
+        append(&possible_moves, int(y_copy * 8 + x_copy))
+        x_copy += 1
+        y_copy -= 1
+    }
+    //bottom-left
+    x_copy = piece_pos.x
+    y_copy = piece_pos.y
+    for x_copy >= 0 && y_copy >= 0{
+        if is_same_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            break
+        }
+        else if is_different_colour(pieces[y_copy * 8 + x_copy], piece_enum_to_int(piece)){
+            append(&possible_moves, int(y_copy * 8 + x_copy))
+            break
+        }
+        append(&possible_moves, int(y_copy * 8 + x_copy))
+        x_copy -= 1
+        y_copy -= 1
+    }
+
+    return possible_moves
+}
+
 get_moves_rook :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
     piece_pos := get_coords_from_index(piece_index)
     possible_moves: [dynamic]int
@@ -68,20 +155,4 @@ get_moves_rook :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dyn
     }
 
     return possible_moves 
-}
-
-get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
-    moves: [dynamic]int
-    #partial switch piece{
-        case .WHITE_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
-        case .BLACK_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
-    }
-    return moves
-}
-
-check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int, sel_piece: Pieces) -> bool{
-    if index == sel_piece_index{
-        return false
-    }
-    return true
 }
