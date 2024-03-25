@@ -28,6 +28,8 @@ get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]
                         for move in get_moves_rook(piece_index, piece, pieces){
                             append(&moves, move)
                         }
+        case .WHITE_PAWN: moves = get_moves_white_pawn(piece_index, piece, pieces)
+        case .BLACK_PAWN: moves = get_moves_black_pawn(piece_index, piece, pieces)
     }
     return moves
 }
@@ -51,6 +53,60 @@ check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int
         return false
     }
     return true
+}
+
+get_moves_black_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    piece_pos := get_coords_from_index(piece_index)
+    possible_moves: [dynamic]int
+
+    //index out of bounds check, probably will change in the future to promoting
+    if piece_pos.y == 0{
+        return possible_moves
+    }
+
+    //movement
+    if !is_same_colour(pieces[piece_index - 8], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 8)
+    }
+    if piece_pos.y == 6 && !is_same_colour(pieces[piece_index - 16], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 16)
+    }
+
+    //piece attacking
+    if is_different_colour(pieces[piece_index + 7], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 7)
+    }
+    if is_different_colour(pieces[piece_index + 9], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 9)
+    }
+    return possible_moves
+}
+
+get_moves_white_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    piece_pos := get_coords_from_index(piece_index)
+    possible_moves: [dynamic]int
+
+    //index out of bounds check, probably will change in the future to promoting
+    if piece_pos.y == 7{
+        return possible_moves
+    }
+
+    //movement
+    if !is_same_colour(pieces[piece_index + 8], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 8)
+    }
+    if piece_pos.y == 1 && !is_same_colour(pieces[piece_index + 16], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 16)
+    }
+
+    //piece attacking
+    if is_different_colour(pieces[piece_index + 7], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 7)
+    }
+    if is_different_colour(pieces[piece_index + 9], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 9)
+    }
+    return possible_moves
 }
 
 get_moves_bishop :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{

@@ -119,6 +119,7 @@ main :: proc(){
     pieces[6] = piece_enum_to_int(.WHITE_PAWN)
     pieces[1] = piece_enum_to_int(.BLACK_PAWN)
     pieces[44] = piece_enum_to_int(.WHITE_PAWN)
+    pieces[51] = piece_enum_to_int(.BLACK_PAWN)
     pieces[46] = piece_enum_to_int(.BLACK_PAWN)
     pieces[63] = piece_enum_to_int(.BLACK_ROOK)
 
@@ -195,12 +196,15 @@ main :: proc(){
             show_possible_moves(moves, piece_int_to_enum(active_piece), pieces)
 
             if !active_waiting_state{
+                //drawing pieces at mouse position
                 rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
 
                 //outline
-                x := i32(int(starting_pos.x) + int(hovered_tile % 8) * 80)
-                y := i32(int(starting_pos.y) - int(hovered_tile / 8) * 80)
-                rl.DrawRectangleLinesEx(rl.Rectangle{f32(x), f32(y), 80.0, 80.0}, 4.0, rl.WHITE);  
+                if hovered_tile != -1{
+                    x := i32(int(starting_pos.x) + int(hovered_tile % 8) * 80)
+                    y := i32(int(starting_pos.y) - int(hovered_tile / 8) * 80)
+                    rl.DrawRectangleLinesEx(rl.Rectangle{f32(x), f32(y), 80.0, 80.0}, 4.0, rl.WHITE);  
+                }
 
                 rl.SetMouseCursor(.POINTING_HAND)
             }
@@ -211,23 +215,30 @@ main :: proc(){
 
         //after clicking left click
         if rl.IsMouseButtonReleased(.LEFT) && active_piece_index != -1{
-
-            //white_move = !white_move
-            if check_if_move_is_legal(pieces, hovered_tile, active_piece_index, piece_int_to_enum(active_piece)){
-                pieces[hovered_tile] = active_piece
-                pieces[active_piece_index] = 0
-                active_piece_index = -1
-
-                //white_move = !white_move
-            }
-            else if hovered_tile == active_piece_index && active_waiting_state == false{
-                active_waiting_state = true 
-
+            //if we try to drop pieces on the void we reset the move
+            if hovered_tile == -1{
                 pieces[active_piece_index] = active_piece
+                active_piece_index = -1
             }
             else{
-                pieces[active_piece_index] = active_piece
-                active_piece_index = -1
+
+                //white_move = !white_move
+                if check_if_move_is_legal(pieces, hovered_tile, active_piece_index, piece_int_to_enum(active_piece)){
+                    pieces[hovered_tile] = active_piece
+                    pieces[active_piece_index] = 0
+                    active_piece_index = -1
+
+                    //white_move = !white_move
+                }
+                else if hovered_tile == active_piece_index && active_waiting_state == false{
+                    active_waiting_state = true 
+
+                    pieces[active_piece_index] = active_piece
+                }
+                else{
+                    pieces[active_piece_index] = active_piece
+                    active_piece_index = -1
+                }
             }
         }
 
