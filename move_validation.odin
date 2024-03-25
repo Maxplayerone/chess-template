@@ -16,31 +16,25 @@ is_different_colour :: proc(piece_to_check: int, validate_piece: int) -> bool{
     return !is_same_colour(piece_to_check, validate_piece) && piece_to_check != 0
 }
 
-
-get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
-    moves: [dynamic]int
-    #partial switch piece{
-        case .WHITE_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
-        case .BLACK_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
-        case .WHITE_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
-        case .BLACK_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
-        case.WHITE_QUEEN: moves = get_moves_bishop(piece_index, piece, pieces)
-                        for move in get_moves_rook(piece_index, piece, pieces){
-                            append(&moves, move)
-                        }
-        case .WHITE_PAWN: moves = get_moves_white_pawn(piece_index, piece, pieces)
-        case .BLACK_PAWN: moves = get_moves_black_pawn(piece_index, piece, pieces)
+check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int, sel_piece: Pieces) -> bool{
+    if index == sel_piece_index{
+        return false
     }
-    return moves
+    return true
 }
 
-show_possible_moves :: proc(moves: [dynamic]int, piece: Pieces, pieces: [64]int){
+show_possible_moves :: proc(moves: [dynamic]int, piece_index: int, piece: Pieces, pieces: [64]int){
     color := rl.Color{0, 0, 0, 70}
     for move in moves{
         move_pos := get_coords_from_index(move)
 
         if is_different_colour(pieces[move], piece_enum_to_int(piece)){
-            rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + move_pos.x * 80.0 + 40), f32(int(starting_pos.y) - move_pos.y * 80 + 40)}, 30, 38, 360.0, 0.0, 1, color) 
+            //if there is a piece in front of a pawn we shouldn't draw a ring
+            if piece == .WHITE_PAWN && move - 8 == piece_index || move + 8 == piece_index && piece == .BLACK_PAWN{
+            }
+            else{
+                rl.DrawRing(rl.Vector2{f32(int(starting_pos.x) + move_pos.x * 80.0 + 40), f32(int(starting_pos.y) - move_pos.y * 80 + 40)}, 30, 38, 360.0, 0.0, 1, color) 
+            }
         }
         else{
             rl.DrawCircle(i32(int(starting_pos.x) + move_pos.x * 80 + 40), i32(int(starting_pos.y) - move_pos.y * 80 + 40), 12.0, color)
@@ -48,11 +42,77 @@ show_possible_moves :: proc(moves: [dynamic]int, piece: Pieces, pieces: [64]int)
     }
 }
 
-check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int, sel_piece: Pieces) -> bool{
-    if index == sel_piece_index{
-        return false
+
+//moves thingies
+get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    moves: [dynamic]int
+    #partial switch piece{
+        case .WHITE_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
+        case .BLACK_ROOK: moves = get_moves_rook(piece_index, piece, pieces)
+        case .WHITE_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
+        case .BLACK_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
+        case .WHITE_QUEEN: moves = get_moves_queen(piece_index, piece, pieces)
+        case .BLACK_QUEEN: moves = get_moves_queen(piece_index, piece, pieces)
+        case .WHITE_PAWN: moves = get_moves_white_pawn(piece_index, piece, pieces)
+        case .BLACK_PAWN: moves = get_moves_black_pawn(piece_index, piece, pieces)
+        case .WHITE_KNIGHT: moves = get_moves_knight(piece_index, piece, pieces)
+        case .BLACK_KNIGHT: moves = get_moves_knight(piece_index, piece, pieces)
     }
-    return true
+    return moves
+}
+
+get_moves_knight :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    piece_pos := get_coords_from_index(piece_index)
+    possible_moves: [dynamic]int
+
+    //0 0 8 0 1 0 0 0 
+    //0 7 0 0 0 2 0 0 
+    //0 0 0 N 0 0 0 0 
+    //0 6 0 0 0 3 0 0 
+    //0 0 5 0 4 0 0 0 
+
+    checking_index := (piece_pos.y + 2) * 8 + piece_pos.x + 1
+    if piece_pos.y < 6 && piece_pos.x != 7 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y + 1) * 8 + piece_pos.x + 2 
+    if piece_pos.y != 7 && piece_pos.x < 6 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y - 1) * 8 + piece_pos.x + 2 
+    if piece_pos.y != 0 && piece_pos.x < 6 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y - 2) * 8 + piece_pos.x + 1 
+    if piece_pos.y > 1 && piece_pos.x != 7 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y - 2) * 8 + piece_pos.x - 1 
+    if piece_pos.y > 1 && piece_pos.x != 0 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y - 1) * 8 + piece_pos.x - 2 
+    if piece_pos.y != 0 && piece_pos.x > 1 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y + 1) * 8 + piece_pos.x - 2 
+    if piece_pos.y != 7 && piece_pos.x > 1 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+    checking_index = (piece_pos.y + 2) * 8 + piece_pos.x - 1 
+    if piece_pos.y < 6 && piece_pos.x != 0 && !is_same_colour(pieces[checking_index], piece_enum_to_int(piece)){
+        append(&possible_moves, checking_index)
+    }
+
+    return possible_moves
+}
+
+get_moves_queen :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    possible_moves := get_moves_bishop(piece_index, piece, pieces)
+    for move in get_moves_rook(piece_index, piece, pieces){
+        append(&possible_moves, move)
+    }
+    return possible_moves
 }
 
 get_moves_black_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
