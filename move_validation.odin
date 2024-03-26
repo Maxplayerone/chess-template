@@ -16,11 +16,14 @@ is_different_colour :: proc(piece_to_check: int, validate_piece: int) -> bool{
     return !is_same_colour(piece_to_check, validate_piece) && piece_to_check != 0
 }
 
-check_if_move_is_legal :: proc(pieces: [64]int, index: int, sel_piece_index: int, sel_piece: Pieces) -> bool{
-    if index == sel_piece_index{
-        return false
+check_if_move_is_legal :: proc(picked_index: int, moves: [dynamic]int) -> bool{
+    is_move_legal := false
+    for move in moves{
+        if move == picked_index{
+            is_move_legal = true
+        }
     }
-    return true
+    return is_move_legal
 }
 
 show_possible_moves :: proc(moves: [dynamic]int, piece_index: int, piece: Pieces, pieces: [64]int){
@@ -57,8 +60,42 @@ get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]
         case .BLACK_PAWN: moves = get_moves_black_pawn(piece_index, piece, pieces)
         case .WHITE_KNIGHT: moves = get_moves_knight(piece_index, piece, pieces)
         case .BLACK_KNIGHT: moves = get_moves_knight(piece_index, piece, pieces)
+        case .WHITE_KING: moves = get_king_moves(piece_index, piece, pieces)
+        case .BLACK_KING: moves = get_king_moves(piece_index, piece, pieces)
     }
     return moves
+}
+
+get_king_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
+    possible_moves: [dynamic]int
+    pos := get_coords_from_index(piece_index)
+
+    if pos.y < 7 && !is_same_colour(pieces[piece_index + 8], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 8)
+    }
+    if pos.y < 7 && pos.x < 7 && !is_same_colour(pieces[piece_index + 9], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 9)
+    }
+    if pos.x < 7 && !is_same_colour(pieces[piece_index + 1], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 1)
+    }
+    if pos.y > 0 && pos.x < 7 && !is_same_colour(pieces[piece_index - 7], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 7)
+    }
+    if pos.y > 0 && !is_same_colour(pieces[piece_index - 8], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 8)
+    }
+    if pos.y > 0  && pos.x > 0 && !is_same_colour(pieces[piece_index - 9], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 9)
+    }
+    if pos.x > 0 && !is_same_colour(pieces[piece_index - 1], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 1)
+    }
+    if pos.y < 7 && pos.x > 0 && !is_same_colour(pieces[piece_index + 7], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index + 7)
+    }
+
+    return possible_moves
 }
 
 get_moves_knight :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{
@@ -125,10 +162,10 @@ get_moves_black_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -
     }
 
     //movement
-    if !is_same_colour(pieces[piece_index - 8], piece_enum_to_int(piece)){
+    if !is_same_colour(pieces[piece_index - 8], piece_enum_to_int(piece)) && pieces[piece_index - 8] != piece_enum_to_int(.WHITE_PAWN){
         append(&possible_moves, piece_index - 8)
     }
-    if piece_pos.y == 6 && !is_same_colour(pieces[piece_index - 16], piece_enum_to_int(piece)){
+    if piece_pos.y == 6 && !is_same_colour(pieces[piece_index - 16], piece_enum_to_int(piece)) && pieces[piece_index - 16] != piece_enum_to_int(.WHITE_PAWN){
         append(&possible_moves, piece_index - 16)
     }
 
@@ -152,10 +189,10 @@ get_moves_white_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -
     }
 
     //movement
-    if !is_same_colour(pieces[piece_index + 8], piece_enum_to_int(piece)){
+    if !is_same_colour(pieces[piece_index + 8], piece_enum_to_int(piece)) && pieces[piece_index + 8] != piece_enum_to_int(.BLACK_PAWN){
         append(&possible_moves, piece_index + 8)
     }
-    if piece_pos.y == 1 && !is_same_colour(pieces[piece_index + 16], piece_enum_to_int(piece)){
+    if piece_pos.y == 1 && !is_same_colour(pieces[piece_index + 16], piece_enum_to_int(piece)) && pieces[piece_index + 16] != piece_enum_to_int(.BLACK_PAWN){
         append(&possible_moves, piece_index + 16)
     }
 

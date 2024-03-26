@@ -120,10 +120,10 @@ main :: proc(){
     pieces[1] = piece_enum_to_int(.BLACK_PAWN)
     pieces[35] = piece_enum_to_int(.WHITE_PAWN)
     pieces[51] = piece_enum_to_int(.BLACK_PAWN)
-    pieces[46] = piece_enum_to_int(.BLACK_PAWN)
+    pieces[44] = piece_enum_to_int(.BLACK_PAWN)
     pieces[63] = piece_enum_to_int(.BLACK_ROOK)
 
-    pieces[27] = piece_enum_to_int(.WHITE_KNIGHT)
+    pieces[27] = piece_enum_to_int(.WHITE_KING)
     pieces[28] = piece_enum_to_int(.BLACK_KNIGHT)
 
     //-----------TEST------------
@@ -224,8 +224,9 @@ main :: proc(){
             }
             else{
 
+                moves := get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces) 
                 //white_move = !white_move
-                if check_if_move_is_legal(pieces, hovered_tile, active_piece_index, piece_int_to_enum(active_piece)){
+                if check_if_move_is_legal(hovered_tile, moves){
                     pieces[hovered_tile] = active_piece
                     pieces[active_piece_index] = 0
                     active_piece_index = -1
