@@ -170,11 +170,11 @@ get_moves_black_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -
     }
 
     //piece attacking
-    if is_different_colour(pieces[piece_index + 7], piece_enum_to_int(piece)){
-        append(&possible_moves, piece_index + 7)
+    if is_different_colour(pieces[piece_index - 7], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 7)
     }
-    if is_different_colour(pieces[piece_index + 9], piece_enum_to_int(piece)){
-        append(&possible_moves, piece_index + 9)
+    if is_different_colour(pieces[piece_index - 9], piece_enum_to_int(piece)){
+        append(&possible_moves, piece_index - 9)
     }
     return possible_moves
 }

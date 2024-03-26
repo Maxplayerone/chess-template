@@ -88,7 +88,6 @@ main :: proc(){
     pieces_tex := rl.LoadTexture("vendor/pieces.png")
 
     pieces: [64]int
-    /*
     pieces[0] = 2
     pieces[1] = 3
     pieces[2] = 4
@@ -97,38 +96,22 @@ main :: proc(){
     pieces[5] = 4
     pieces[6] = 3
     pieces[7] = 2
-    */
-    /*
-    for i in 0..<8{
-        pieces[i] = piece_enum_to_int(.WHITE_ROOK)
-    }
-
     for i in 0..<8{
         pieces[8 + i] = 1
     }
-
     for i in 0..<8{
         pieces[48 + i] = piece_enum_to_int(.BLACK_PAWN)
     }
-    for i in 0..<8{
-        pieces[56 + i] = piece_enum_to_int(.BLACK_ROOK)
-    }
-    */
 
-    pieces[24] = piece_enum_to_int(.WHITE_BISHOP)
-    pieces[6] = piece_enum_to_int(.WHITE_PAWN)
-    pieces[1] = piece_enum_to_int(.BLACK_PAWN)
-    pieces[35] = piece_enum_to_int(.WHITE_PAWN)
-    pieces[51] = piece_enum_to_int(.BLACK_PAWN)
-    pieces[44] = piece_enum_to_int(.BLACK_PAWN)
+    pieces[56] = piece_enum_to_int(.BLACK_ROOK)
+    pieces[57] = piece_enum_to_int(.BLACK_KNIGHT)
+    pieces[58] = piece_enum_to_int(.BLACK_BISHOP)
+    pieces[59] = piece_enum_to_int(.BLACK_QUEEN)
+    pieces[60] = piece_enum_to_int(.BLACK_KING)
+    pieces[61] = piece_enum_to_int(.BLACK_BISHOP)
+    pieces[62] = piece_enum_to_int(.BLACK_KNIGHT)
     pieces[63] = piece_enum_to_int(.BLACK_ROOK)
 
-    pieces[27] = piece_enum_to_int(.WHITE_KING)
-    pieces[28] = piece_enum_to_int(.BLACK_KNIGHT)
-
-    //-----------TEST------------
-    //pieces[38] = piece_enum_to_int(.WHITE_ROOK)
-    //pieces[53] = piece_enum_to_int(.WHITE_PAWN)
 
     active_piece_index := -1
     active_piece := -1
@@ -136,15 +119,16 @@ main :: proc(){
 
     white_move := true 
 
+    moves: [dynamic]int
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         defer rl.EndDrawing()
 
         for j in 0..<8{
             for i in 0..<8{
-                color := rl.Color{255, 238, 214, 255}
+                color := rl.Color{122, 84, 61, 255}
                 if (i + j) % 2 == 1{
-                    color = rl.Color{122, 84, 61, 255}
+                    color = rl.Color{255, 238, 214, 255}
                 }
 
                 rl.DrawRectangle(i32(int(starting_pos.x) + i * 80), i32(int(starting_pos.y) - j * 80), 80, 80, color) 
@@ -178,17 +162,19 @@ main :: proc(){
                     pieces[active_piece_index] = 0
 
                     active_waiting_state = false
+
+                    moves = get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces) 
                 //}
             }
         }
 
         //while the left click is down (or the piece is in it's waiting tile)
         if active_piece_index != -1{
-            moves := get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces) 
-
+            /*
                     for move in moves{
                         draw_quad_at_index(move, rl.RED)
                     }
+                    */
 
             //gradient
             real_x := i32(int(starting_pos.x) + int(active_piece_index % 8) * 80)
@@ -223,8 +209,6 @@ main :: proc(){
                 active_piece_index = -1
             }
             else{
-
-                moves := get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces) 
                 //white_move = !white_move
                 if check_if_move_is_legal(hovered_tile, moves){
                     pieces[hovered_tile] = active_piece
