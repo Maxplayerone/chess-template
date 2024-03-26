@@ -156,7 +156,7 @@ main :: proc(){
         //when holding left click
         if rl.IsMouseButtonDown(.LEFT) && hovered_tile != -1 && pieces[hovered_tile] != 0{
             if active_piece_index == -1 || active_waiting_state == true && hovered_tile != active_piece_index{
-                //if is_this_that_color_turn(white_move, pieces, hovered_tile){
+                if is_this_that_color_turn(white_move, pieces, hovered_tile){
                     active_piece_index = hovered_tile
                     active_piece = pieces[active_piece_index]
                     pieces[active_piece_index] = 0
@@ -164,7 +164,7 @@ main :: proc(){
                     active_waiting_state = false
 
                     moves = get_moves(active_piece_index, piece_int_to_enum(active_piece), pieces) 
-                //}
+                }
             }
         }
 
@@ -209,13 +209,12 @@ main :: proc(){
                 active_piece_index = -1
             }
             else{
-                //white_move = !white_move
                 if check_if_move_is_legal(hovered_tile, moves){
                     pieces[hovered_tile] = active_piece
                     pieces[active_piece_index] = 0
                     active_piece_index = -1
 
-                    //white_move = !white_move
+                    white_move = !white_move
                 }
                 else if hovered_tile == active_piece_index && active_waiting_state == false{
                     active_waiting_state = true 
