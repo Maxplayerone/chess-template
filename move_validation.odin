@@ -56,8 +56,8 @@ get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]
         case .BLACK_BISHOP: moves = get_moves_bishop(piece_index, piece, pieces)
         case .WHITE_QUEEN: moves = get_moves_queen(piece_index, piece, pieces)
         case .BLACK_QUEEN: moves = get_moves_queen(piece_index, piece, pieces)
-        case .WHITE_PAWN: moves = get_moves_white_pawn(piece_index, piece, pieces)
-        case .BLACK_PAWN: moves = get_moves_black_pawn(piece_index, piece, pieces)
+        case .WHITE_PAWN: moves = are_we_looking_at_white ? get_moves_white_pawn(piece_index, piece, pieces) : get_moves_black_pawn(piece_index, piece, pieces)
+        case .BLACK_PAWN: moves = !are_we_looking_at_white ? get_moves_white_pawn(piece_index, piece, pieces) : get_moves_black_pawn(piece_index, piece, pieces)
         case .WHITE_KNIGHT: moves = get_moves_knight(piece_index, piece, pieces)
         case .BLACK_KNIGHT: moves = get_moves_knight(piece_index, piece, pieces)
         case .WHITE_KING: moves = get_king_moves(piece_index, piece, pieces)
@@ -156,16 +156,18 @@ get_moves_black_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -
     piece_pos := get_coords_from_index(piece_index)
     possible_moves: [dynamic]int
 
+    counter_piece := are_we_looking_at_white ? Pieces.WHITE_PAWN : Pieces.BLACK_PAWN
+
     //index out of bounds check, probably will change in the future to promoting
     if piece_pos.y == 0{
         return possible_moves
     }
 
     //movement
-    if !is_same_colour(pieces[piece_index - 8], piece_enum_to_int(piece)) && pieces[piece_index - 8] != piece_enum_to_int(.WHITE_PAWN){
+    if !is_same_colour(pieces[piece_index - 8], piece_enum_to_int(piece)) && pieces[piece_index - 8] != piece_enum_to_int(counter_piece){
         append(&possible_moves, piece_index - 8)
     }
-    if piece_pos.y == 6 && !is_same_colour(pieces[piece_index - 16], piece_enum_to_int(piece)) && pieces[piece_index - 16] != piece_enum_to_int(.WHITE_PAWN){
+    if piece_pos.y == 6 && !is_same_colour(pieces[piece_index - 16], piece_enum_to_int(piece)) && pieces[piece_index - 16] != piece_enum_to_int(counter_piece){
         append(&possible_moves, piece_index - 16)
     }
 
@@ -183,16 +185,18 @@ get_moves_white_pawn :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -
     piece_pos := get_coords_from_index(piece_index)
     possible_moves: [dynamic]int
 
+    counter_piece := are_we_looking_at_white ? Pieces.BLACK_PAWN : Pieces.WHITE_PAWN
+
     //index out of bounds check, probably will change in the future to promoting
     if piece_pos.y == 7{
         return possible_moves
     }
 
     //movement
-    if !is_same_colour(pieces[piece_index + 8], piece_enum_to_int(piece)) && pieces[piece_index + 8] != piece_enum_to_int(.BLACK_PAWN){
+    if !is_same_colour(pieces[piece_index + 8], piece_enum_to_int(piece)) && pieces[piece_index + 8] != piece_enum_to_int(counter_piece){
         append(&possible_moves, piece_index + 8)
     }
-    if piece_pos.y == 1 && !is_same_colour(pieces[piece_index + 16], piece_enum_to_int(piece)) && pieces[piece_index + 16] != piece_enum_to_int(.BLACK_PAWN){
+    if piece_pos.y == 1 && !is_same_colour(pieces[piece_index + 16], piece_enum_to_int(piece)) && pieces[piece_index + 16] != piece_enum_to_int(counter_piece){
         append(&possible_moves, piece_index + 16)
     }
 

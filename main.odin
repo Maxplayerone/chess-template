@@ -6,50 +6,6 @@ import "core:fmt"
 WIDTH :: 960
 HEIGHT :: 720
 
-get_spritesheet_piece_pos :: proc(i: int) -> rl.Rectangle{
-    rect := rl.Rectangle{0.0, 0.0, 200.0, 200.0}
-    piece := piece_int_to_enum(i)
-    switch piece{
-        case .WHITE_KING:
-            rect.x = 0.0
-            rect.y = 0.0
-        case .WHITE_QUEEN:
-            rect.x = 200.0
-            rect.y = 0.0
-        case .WHITE_BISHOP:
-            rect.x = 400.0
-            rect.y = 0.0
-        case .WHITE_KNIGHT:
-            rect.x = 600.0
-            rect.y = 0.0
-        case .WHITE_ROOK:
-            rect.x = 800.0
-            rect.y = 0.0
-        case .WHITE_PAWN:
-            rect.x = 1000.0
-            rect.y = 0.0
-        case .BLACK_KING:
-            rect.x = 0.0
-            rect.y = 1000.0
-        case .BLACK_QUEEN:
-            rect.x = 200.0
-            rect.y = 1000.0
-        case .BLACK_BISHOP:
-            rect.x = 400.0
-            rect.y = 1000.0
-        case .BLACK_KNIGHT:
-            rect.x = 600.0
-            rect.y = 1000.0
-        case .BLACK_ROOK:
-            rect.x = 800.0
-            rect.y = 1000.0
-        case .BLACK_PAWN:
-            rect.x = 1000.0
-            rect.y = 1000.0
-    }
-    return rect
-}
-
 get_clicked_tile :: proc() -> int{
     index := -1
     x := int(rl.GetMouseX())
@@ -79,13 +35,25 @@ is_this_that_color_turn :: proc(white_move: bool, pieces: [64]int, hovered_tile:
     return false
 }
 
+
+are_we_looking_at_white := true
+rotate_board :: proc(pieces: [64]int) -> [64]int{
+    pieces := pieces
+
+    for i in 0..<32{
+        temp := pieces[i]
+        pieces[i] = pieces[63 - i]
+        pieces[63 - i] = temp
+    }
+
+    return pieces
+}
+
 main :: proc(){
     rl.InitWindow(WIDTH, HEIGHT, "Chess game")
     defer rl.CloseWindow()
 
     rl.SetTargetFPS(60)
-
-    pieces_tex := rl.LoadTexture("vendor/pieces.png")
 
     pieces: [64]int
     pieces[0] = 2
@@ -120,15 +88,22 @@ main :: proc(){
     white_move := true 
 
     moves: [dynamic]int
+
+    rotate_icon := rl.LoadTexture("vendor/rotate.png")
+    rotate_icon_rect := rl.Rectangle{starting_pos.x +  80.0 * 8.0 + 20.0, starting_pos.y, 40.0, 40.0}
+
+    primary_color := rl.Color{122, 84, 61, 255}
+    secondary_color := rl.Color{255, 238, 214, 255}
+
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
         defer rl.EndDrawing()
 
         for j in 0..<8{
             for i in 0..<8{
-                color := rl.Color{122, 84, 61, 255}
+                color := primary_color
                 if (i + j) % 2 == 1{
-                    color = rl.Color{255, 238, 214, 255}
+                    color = secondary_color 
                 }
 
                 rl.DrawRectangle(i32(int(starting_pos.x) + i * 80), i32(int(starting_pos.y) - j * 80), 80, 80, color) 
@@ -139,7 +114,7 @@ main :: proc(){
             for j in 0..<8{
                 piece_index := pieces[i * 8 + j]
                 if piece_index > 0{
-                    rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(piece_index), rl.Rectangle{f32(int(starting_pos.x) + j * 80), f32(int(starting_pos.y) - i * 80), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+                    rl.DrawTexturePro(get_pieces_tex(), get_spritesheet_piece_pos(piece_index), rl.Rectangle{f32(int(starting_pos.x) + j * 80), f32(int(starting_pos.y) - i * 80), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
                 }
             }
         }
@@ -185,7 +160,7 @@ main :: proc(){
 
             if !active_waiting_state{
                 //drawing pieces at mouse position
-                rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+                rl.DrawTexturePro(get_pieces_tex(), get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(rl.GetMouseX() - 40), f32(rl.GetMouseY() - 40), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
 
                 //outline
                 if hovered_tile != -1{
@@ -197,7 +172,7 @@ main :: proc(){
                 rl.SetMouseCursor(.POINTING_HAND)
             }
             else{
-                rl.DrawTexturePro(pieces_tex, get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(real_x), f32(real_y), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
+                rl.DrawTexturePro(get_pieces_tex(), get_spritesheet_piece_pos(active_piece), rl.Rectangle{f32(real_x), f32(real_y), 80, 80}, rl.Vector2{0.0, 0.0}, 0.0, rl.WHITE)
             }
         }
 
@@ -228,13 +203,26 @@ main :: proc(){
             }
         }
 
-        rl.ClearBackground(rl.Color{56, 56, 56, 255})
 
+        //-----------GUI----------
         if white_move{
             rl.DrawText("White to move", WIDTH / 2 - 120, 0, 40, rl.WHITE)
         }
         else{
             rl.DrawText("Black to move", WIDTH / 2 - 120, 0, 40, rl.WHITE)
         }
+
+        if rl.IsMouseButtonPressed(.LEFT) && mouse_rect_col(rotate_icon_rect){
+            temp_color := primary_color 
+            primary_color = secondary_color
+            secondary_color = temp_color
+            pieces = rotate_board(pieces)
+
+            are_we_looking_at_white = !are_we_looking_at_white
+        }
+
+        rl.DrawTextureEx(rotate_icon, {rotate_icon_rect.x, rotate_icon_rect.y}, 0.0, 0.02, rl.WHITE)
+
+        rl.ClearBackground(rl.Color{56, 56, 56, 255})
     }
 }
