@@ -25,6 +25,59 @@ get_clicked_tile :: proc() -> int{
     return index
 }
 
+read_from_fen :: proc(fen: string) -> [64]int{
+    pieces: [64]int
+    i := -1
+
+    for c in fen{
+        switch c{
+            case '1': i += 1
+            case '2': i += 2
+            case '3': i += 3
+            case '4': i += 4
+            case '5': i += 5
+            case '6': i += 6
+            case '7': i += 7
+            case '8': i += 8
+            case 'p': i += 1; pieces[i] = piece_enum_to_int(.BLACK_PAWN)
+            case 'n': i += 1; pieces[i] = piece_enum_to_int(.BLACK_KNIGHT)
+            case 'r': i += 1; pieces[i] = piece_enum_to_int(.BLACK_ROOK)
+            case 'b': i += 1; pieces[i] = piece_enum_to_int(.BLACK_BISHOP)
+            case 'q': i += 1; pieces[i] = piece_enum_to_int(.BLACK_QUEEN)
+            case 'k': i += 1; pieces[i] = piece_enum_to_int(.BLACK_KING)
+            case 'P': i += 1; pieces[i] = piece_enum_to_int(.WHITE_PAWN)
+            case 'N': i += 1; pieces[i] = piece_enum_to_int(.WHITE_KNIGHT)
+            case 'R': i += 1; pieces[i] = piece_enum_to_int(.WHITE_ROOK)
+            case 'B': i += 1; pieces[i] = piece_enum_to_int(.WHITE_BISHOP)
+            case 'Q': i += 1; pieces[i] = piece_enum_to_int(.WHITE_QUEEN)
+            case 'K': i += 1; pieces[i] = piece_enum_to_int(.WHITE_KING)
+        }
+    }
+
+    //rotate to our "coordinate-space"
+    for i in 0..<8{
+        temp := pieces[56 + i]
+        pieces[56 + i] = pieces[i]
+        pieces[i] = temp 
+    }
+    for i in 0..<8{
+        temp := pieces[48 + i]
+        pieces[48 + i] = pieces[8 + i]
+        pieces[8 + i] = temp 
+    }
+    for i in 0..<8{
+        temp := pieces[40 + i]
+        pieces[40 + i] = pieces[16 + i]
+        pieces[16 + i] = temp 
+    }
+    for i in 0..<8{
+        temp := pieces[32 + i]
+        pieces[32 + i] = pieces[24 + i]
+        pieces[24 + i] = temp 
+    }
+    return pieces
+}
+
 is_this_that_color_turn :: proc(white_move: bool, pieces: [64]int, hovered_tile: int) -> bool{
     if white_move && pieces[hovered_tile] > 0 && pieces[hovered_tile] < 7{
         return true
@@ -55,7 +108,7 @@ main :: proc(){
 
     rl.SetTargetFPS(60)
 
-    pieces: [64]int
+    /*
     pieces[0] = 2
     pieces[1] = 3
     pieces[2] = 4
@@ -79,6 +132,9 @@ main :: proc(){
     pieces[61] = piece_enum_to_int(.BLACK_BISHOP)
     pieces[62] = piece_enum_to_int(.BLACK_KNIGHT)
     pieces[63] = piece_enum_to_int(.BLACK_ROOK)
+    */
+
+    pieces := read_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 
 
     active_piece_index := -1
