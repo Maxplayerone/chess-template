@@ -45,6 +45,33 @@ show_possible_moves :: proc(moves: [dynamic]int, piece_index: int, piece: Pieces
     }
 }
 
+is_square_attacked :: proc(square: int, pieces: [64]int, this_turn_color: bool) -> bool{
+    pieces_indexes: [dynamic]int
+    actual_pieces: [dynamic]int
+
+
+    piece_of_this_turn_color := this_turn_color ? Pieces.WHITE_PAWN : Pieces.BLACK_PAWN
+
+    for piece, i in pieces{
+        if piece != 0 && !is_same_colour(piece, piece_enum_to_int(piece_of_this_turn_color)){
+            append(&actual_pieces, piece)
+            append(&pieces_indexes, i)
+        }
+    }
+    for index, i in pieces_indexes{
+        moves := get_moves(index, piece_int_to_enum(actual_pieces[i]), pieces)
+        for move in moves{
+            if move == square{
+                return true
+            }
+        }
+    }
+    delete(actual_pieces)
+    delete(pieces_indexes)
+
+    return false 
+}
+
 
 //moves thingies
 get_moves :: proc(piece_index: int, piece: Pieces, pieces: [64]int) -> [dynamic]int{

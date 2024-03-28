@@ -6,7 +6,7 @@ import "core:fmt"
 WIDTH :: 960
 HEIGHT :: 720
 
-get_clicked_tile :: proc() -> int{
+get_hovered_tile :: proc() -> int{
     index := -1
     x := int(rl.GetMouseX())
     y := int(rl.GetMouseY())
@@ -108,32 +108,6 @@ main :: proc(){
 
     rl.SetTargetFPS(60)
 
-    /*
-    pieces[0] = 2
-    pieces[1] = 3
-    pieces[2] = 4
-    pieces[3] = 5
-    pieces[4] = 6
-    pieces[5] = 4
-    pieces[6] = 3
-    pieces[7] = 2
-    for i in 0..<8{
-        pieces[8 + i] = 1
-    }
-    for i in 0..<8{
-        pieces[48 + i] = piece_enum_to_int(.BLACK_PAWN)
-    }
-
-    pieces[56] = piece_enum_to_int(.BLACK_ROOK)
-    pieces[57] = piece_enum_to_int(.BLACK_KNIGHT)
-    pieces[58] = piece_enum_to_int(.BLACK_BISHOP)
-    pieces[59] = piece_enum_to_int(.BLACK_QUEEN)
-    pieces[60] = piece_enum_to_int(.BLACK_KING)
-    pieces[61] = piece_enum_to_int(.BLACK_BISHOP)
-    pieces[62] = piece_enum_to_int(.BLACK_KNIGHT)
-    pieces[63] = piece_enum_to_int(.BLACK_ROOK)
-    */
-
     pieces := read_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 
 
@@ -150,6 +124,9 @@ main :: proc(){
 
     primary_color := rl.Color{122, 84, 61, 255}
     secondary_color := rl.Color{255, 238, 214, 255}
+
+    black_king_pos := 60
+    white_king_pos := 4
 
     for !rl.WindowShouldClose(){
         rl.BeginDrawing()
@@ -176,7 +153,7 @@ main :: proc(){
         }
 
         //changing cursor
-        hovered_tile := get_clicked_tile()
+        hovered_tile := get_hovered_tile()
         if hovered_tile != -1 && pieces[hovered_tile] != 0 && active_piece_index == -1{
             rl.SetMouseCursor(.CROSSHAIR)
         }
@@ -201,7 +178,7 @@ main :: proc(){
 
         //while the left click is down (or the piece is in it's waiting tile)
         if active_piece_index != -1{
-            /*
+                /*
                     for move in moves{
                         draw_quad_at_index(move, rl.RED)
                     }
@@ -241,11 +218,31 @@ main :: proc(){
             }
             else{
                 if check_if_move_is_legal(hovered_tile, moves){
+
+                    #partial switch piece_int_to_enum(active_piece){
+                        case .WHITE_KING: white_king_pos = hovered_tile
+                        case .BLACK_KING: black_king_pos = hovered_tile
+                    }
+
+                    last_piece_at_hovered_tile := pieces[hovered_tile]
+
                     pieces[hovered_tile] = active_piece
                     pieces[active_piece_index] = 0
-                    active_piece_index = -1
 
-                    white_move = !white_move
+                    cur_king := white_move ? white_king_pos : black_king_pos
+                    if is_square_attacked(cur_king, pieces, white_move){
+                        pieces[hovered_tile] = last_piece_at_hovered_tile
+                        pieces[active_piece_index] = active_piece
+                        active_piece_index = -1
+
+                        draw_quad_at_index(cur_king, rl.RED)
+                    }
+                    else{
+
+                        white_move = !white_move
+                        active_piece_index = -1
+                    }
+
                 }
                 else if hovered_tile == active_piece_index && active_waiting_state == false{
                     active_waiting_state = true 
@@ -280,5 +277,6 @@ main :: proc(){
         rl.DrawTextureEx(rotate_icon, {rotate_icon_rect.x, rotate_icon_rect.y}, 0.0, 0.02, rl.WHITE)
 
         rl.ClearBackground(rl.Color{56, 56, 56, 255})
+
     }
 }
